@@ -2,7 +2,7 @@
 
 **Photo proof for every cleaning job, checked by Gemini.**
 
-![How it works](docs/how-it-works.gif)
+![How it works](https://github.com/fahmymahamud/mclean-handover-ai/blob/main/how-it-works.gif)
 
 Cleaning companies and clients often disagree about whether a job was done properly, and handover photos get lost in mixed-up WhatsApp chats. Handover AI gives technicians a fast, simple phone app to prove every job:
 
