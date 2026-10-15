@@ -4,6 +4,8 @@
 
 ![How it works](docs/how-it-works.gif)
 
+**Interactive version (click through each step):** https://fahmymahamud.github.io/mclean-handover-ai/how-it-works.html
+
 Cleaning companies and clients often disagree about whether a job was done properly, and handover photos get lost in mixed-up WhatsApp chats. Handover AI gives technicians a fast, simple phone app to prove every job:
 
 1. **Before photo** of each area (camera or gallery). Gemini names the area automatically.
