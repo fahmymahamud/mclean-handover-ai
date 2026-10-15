@@ -4,7 +4,7 @@
 
 ![How it works](docs/how-it-works.gif)
 
-**Interactive version (click through each step):** https://fahmymahamud.github.io/mclean-handover-ai/how-it-works.html
+**Interactive version (click through each step):** (https://fahmymahamud.github.io/mclean-handover-ai/how-it-works.html)
 
 Cleaning companies and clients often disagree about whether a job was done properly, and handover photos get lost in mixed-up WhatsApp chats. Handover AI gives technicians a fast, simple phone app to prove every job:
 
@@ -28,7 +28,7 @@ Built for accessibility: large buttons, almost no typing, and fast on low-end ph
 
 ## Live demo
 - **Web app (Firebase Hosting):** https://mclean-handover.web.app
-- **Interactive walkthrough:** open [`docs/how-it-works.html`](docs/how-it-works.html) in a browser
+- **Interactive walkthrough:** open [`how-it-works`](https://fahmymahamud.github.io/mclean-handover-ai/) in a browser
 
 ## Architecture
 ![Technician flow: Pick, Snap, Clean, Snap, Done](docs/technician-flow.png)
