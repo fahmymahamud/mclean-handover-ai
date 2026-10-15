@@ -29,7 +29,7 @@ Built for accessibility: large buttons, almost no typing, and fast on low-end ph
 - **Interactive walkthrough:** open [`docs/how-it-works.html`](docs/how-it-works.html) in a browser
 
 ## Architecture
-![Architecture](docs/how-it-works.png)
+![Technician flow: Pick, Snap, Clean, Snap, Done](docs/technician-flow.png)
 
 ```mermaid
 flowchart LR
