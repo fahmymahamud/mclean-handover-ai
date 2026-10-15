@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cleaning Report — M Clean Handover AI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="report-page">
+  <header class="app-header">
+    <div class="header-container">
+      <h1 class="brand-title">M Clean Handover AI</h1>
+      <span class="app-badge">Cleaning Report</span>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div id="reportLoading" class="loading-container">
+      <p>Loading cleaning report…</p>
+    </div>
+
+    <div id="reportError" class="error-banner" style="display: none;"></div>
+
+    <article id="reportContent" class="report-container" style="display: none;">
+      <header class="report-meta card">
+        <div class="report-meta-header">
+          <div>
+            <span class="report-eyebrow">Verified Handover Record</span>
+            <h2 id="reportJobName" class="report-title">Unit 12-34</h2>
+          </div>
+          <span id="reportStatusBadge" class="status-badge status-completed">Completed</span>
+        </div>
+        <div class="report-meta-details">
+          <p><strong>Completed:</strong> <span id="reportCompletedAt">—</span></p>
+          <p><strong>Job ID:</strong> <code id="reportJobId"></code></p>
+        </div>
+      </header>
+
+      <section class="report-pairs-section">
+        <h3 class="section-title">Cleaned Areas Evidence</h3>
+        <div id="reportPairsGrid" class="report-pairs-grid">
+          <!-- Populated by report.js -->
+        </div>
+      </section>
+
+      <!-- Day 3: Report an Issue Box -->
+      <section class="report-issue-section card">
+        <div class="issue-section-header">
+          <h3 class="section-title">Report an Issue</h3>
+          <p class="section-subtitle">Not satisfied with an area or noticed an issue? Let us know below.</p>
+        </div>
+
+        <form id="reportIssueForm" class="issue-form">
+          <div class="form-group">
+            <label for="complaintTextInput">Describe the issue (max 500 characters)</label>
+            <textarea
+              id="complaintTextInput"
+              class="issue-textarea"
+              maxlength="500"
+              rows="4"
+              placeholder="e.g. The floor in the bedroom seems dusty near the window..."
+              required
+            ></textarea>
+            <div class="char-count-row">
+              <span id="charCountLabel" class="char-count-text">0 / 500 characters</span>
+            </div>
+          </div>
+          <div id="complaintFormError" class="error-banner" style="display: none; margin-bottom: 1rem;"></div>
+          <button type="submit" id="submitComplaintBtn" class="primary-btn">Submit Report</button>
+        </form>
+
+        <!-- Client only sees this confirmation upon submission — NEVER the AI verdict -->
+        <div id="complaintSuccessBox" class="success-box" style="display: none;">
+          <h4>Thank you.</h4>
+          <p>M Clean will review your report and contact you.</p>
+        </div>
+      </section>
+    </article>
+  </main>
+
+  <footer class="app-footer">
+    <p>AI flags visible issues only. Final decision is made by M Clean staff.</p>
+  </footer>
+
+  <script src="report.js"></script>
+</body>
+</html>

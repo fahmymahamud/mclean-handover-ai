@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>M Clean Handover AI — Technician App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-container">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <h1 class="brand-title"><a href="#/" class="brand-link">M Clean Handover AI</a></h1>
+        <span class="app-badge">Technician</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- View 1: Home Dashboard (#/) -->
+    <section id="viewHome" class="view-panel" style="display: none;">
+      <div class="home-tabs-grid">
+        <a href="#/jobs" class="tab-card-btn" id="tabOpenJobsBtn">
+          <div class="tab-card-icon">📋</div>
+          <div class="tab-card-content">
+            <span class="tab-card-title">Open Jobs</span>
+            <span class="tab-card-count" id="homeOpenJobsCount">—</span>
+          </div>
+        </a>
+
+        <a href="#/complaints" class="tab-card-btn" id="tabComplaintsBtn">
+          <div class="tab-card-icon">⚠️</div>
+          <div class="tab-card-content">
+            <span class="tab-card-title">Complaints</span>
+            <span class="tab-card-count" id="homeNewComplaintsCount">—</span>
+            <span class="tab-card-badge" id="homeNewComplaintsBadge" style="display: none;">NEW</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- View 2: Open Jobs List (#/jobs) -->
+    <section id="viewJobs" class="view-panel" style="display: none;">
+      <div class="view-nav-header">
+        <a href="#/" class="nav-back-btn">← Back</a>
+        <h2>Open Jobs</h2>
+        <button type="button" id="openNewJobModalBtn" class="primary-btn sm-btn">+ New Job</button>
+      </div>
+
+      <!-- New Job Inline Creator -->
+      <div id="newJobCard" class="card form-card" style="display: none;">
+        <h3>Create New Cleaning Job</h3>
+        <form id="createJobForm">
+          <div class="form-group">
+            <label for="newJobName">Job Name or Unit Number</label>
+            <input
+              type="text"
+              id="newJobName"
+              placeholder="e.g. Unit 12-34 handover clean"
+              required
+            />
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">Start Job</button>
+            <button type="button" id="cancelNewJobBtn" class="secondary-btn">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- List of Open Jobs (No photos) -->
+      <div id="openJobsList" class="jobs-list">
+        <p class="loading-text">Loading active jobs…</p>
+      </div>
+    </section>
+
+    <!-- View 3: Job Detail & Photo Pairs Editor (#/job/:id) -->
+    <section id="viewJobDetail" class="view-panel" style="display: none;">
+      <div class="view-nav-header">
+        <a href="#/jobs" class="nav-back-btn">← Back</a>
+        <span id="jobStatusBadge" class="status-badge status-in-progress">In Progress</span>
+      </div>
+
+      <div class="job-meta-header">
+        <h2 id="activeJobTitle">Unit 12-34</h2>
+        <p id="activeJobMeta" class="text-muted"></p>
+      </div>
+
+      <!-- In-Page Warning Banner for Incomplete/Issue Warnings -->
+      <div id="jobWarningBanner" class="warning-banner" style="display: none;"></div>
+      <div id="jobErrorBanner" class="error-banner" style="display: none;"></div>
+
+      <!-- Photo Pairs Area Grid (Photos loaded on this page) -->
+      <div id="pairsContainer" class="pairs-grid">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Add Area Button (up to 10 max) -->
+      <div class="editor-actions">
+        <button type="button" id="addAreaBtn" class="secondary-btn add-area-btn">
+          + Add Area (<span id="areaCountLabel">0</span>/10)
+        </button>
+      </div>
+
+      <!-- Job Completion Panel -->
+      <div class="completion-panel card">
+        <div id="completeJobPrompt">
+          <button type="button" id="completeJobBtn" class="primary-btn lg-btn" disabled>
+            Complete Job &amp; Generate Report
+          </button>
+          <p id="completeHelperText" class="helper-text">
+            Upload an after photo for every area before completing the job.
+          </p>
+        </div>
+
+        <!-- In-Page Confirmation Warning if issues remain -->
+        <div id="issuesWarningConfirm" class="confirm-box" style="display: none;">
+          <p class="confirm-msg" id="issuesWarningText"></p>
+          <div class="confirm-actions">
+            <button type="button" id="confirmCompleteBtn" class="primary-btn warning-action-btn">
+              Yes, Complete Job Anyway
+            </button>
+            <button type="button" id="cancelCompleteBtn" class="secondary-btn">
+              Cancel &amp; Fix Issues
+            </button>
+          </div>
+        </div>
+
+        <!-- Completed Job View with WhatsApp Share -->
+        <div id="completedSuccessBox" class="success-box" style="display: none;">
+          <h3>✅ Job Completed</h3>
+          <p>Handover evidence is locked and ready for the client.</p>
+          <div class="share-actions">
+            <a id="whatsappShareBtn" class="whatsapp-btn" target="_blank" rel="noopener noreferrer">
+              Share on WhatsApp
+            </a>
+            <a id="viewReportBtn" class="secondary-btn" target="_blank" rel="noopener noreferrer">
+              View Cleaning Report
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View 4: Complaints List (#/complaints) -->
+    <section id="viewComplaints" class="view-panel" style="display: none;">
+      <div class="view-nav-header">
+        <a href="#/" class="nav-back-btn">← Back</a>
+        <h2>Client Complaints</h2>
+      </div>
+      <!-- List of Complaints (Light list, no photos) -->
+      <div id="complaintsListContainer" class="complaints-list">
+        <p class="loading-text">Loading complaints…</p>
+      </div>
+    </section>
+
+    <!-- View 5: Complaint Detail & Photos (#/complaint/:jobId/:complaintId) -->
+    <section id="viewComplaintDetail" class="view-panel" style="display: none;">
+      <div class="view-nav-header">
+        <a href="#/complaints" class="nav-back-btn">← Back</a>
+        <span id="detailComplaintStatusBadge" class="status-badge">New</span>
+      </div>
+
+      <div id="complaintDetailContainer">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>AI flags visible issues only. Final decision is made by M Clean staff.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

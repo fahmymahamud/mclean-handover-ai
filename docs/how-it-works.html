@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Handover AI — How it works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16231F;--mut:#55635F;--teal:#0F766E;--soft:#E7F3F1;--line:#D3DEDA;--blue:#1D4ED8;--bluebg:#E8EEFD;--amber:#B45309;--amberbg:#FEF3C7}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,sans-serif}
+.wrap{max-width:1500px;margin:0 auto;padding:36px 32px 28px}
+h1{margin:0;font-size:clamp(26px,3.2vw,40px);font-weight:800;letter-spacing:-.01em}
+h1 span{color:var(--teal)}
+.sub{margin-top:6px;font-size:clamp(15px,1.4vw,19px);color:var(--mut)}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:18px}
+.bar button{font:inherit;font-weight:700;font-size:15px;min-height:44px;padding:0 18px;border-radius:12px;border:2px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+.bar button.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+.bar button:focus-visible,.step:focus-visible{outline:3px solid #F59E0B;outline-offset:3px}
+.now{flex:1;min-width:260px;font-size:16px;color:var(--mut)}
+.now b{color:var(--ink)}
+.sec{margin-top:26px;font-size:14px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--teal)}
+.row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:22px;margin-top:16px}
+.step{position:relative;border:2px solid var(--line);border-radius:16px;padding:16px 16px 18px;background:#fff;cursor:pointer;
+  transition:transform .45s cubic-bezier(.2,.8,.2,1),border-color .35s,background-color .35s,box-shadow .45s,opacity .35s;opacity:.55}
+.step.done{opacity:.9}
+.step.active{opacity:1;border-color:var(--teal);background:var(--soft);transform:translateY(-6px) scale(1.03);box-shadow:0 14px 30px -12px rgba(15,118,110,.45)}
+.step .num{position:absolute;top:-14px;left:14px;width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;transition:background-color .35s}
+.step.active .num,.step.done .num{background:var(--teal)}
+.who{font-size:12.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.who.ai{color:var(--teal)}
+.who.ai::before{content:"✦ "}
+.step h3{margin:6px 0 6px;font-size:clamp(16px,1.4vw,20px);font-weight:800;line-height:1.2}
+.step p{margin:0;font-size:clamp(13px,1.1vw,15px);line-height:1.45;color:#2E3B37}
+.step:not(:last-child)::after{content:"";position:absolute;right:-19px;top:50%;width:16px;height:16px;margin-top:-8px;
+  background:no-repeat center/16px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C3D0CC' stroke-width='3'%3E%3Cpath d='M4 12h14M12 5l7 7-7 7'/%3E%3C/svg%3E")}
+.step.done::after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230F766E' stroke-width='3'%3E%3Cpath d='M4 12h14M12 5l7 7-7 7'/%3E%3C/svg%3E")}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.chip{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;border:1.5px solid}
+.c-ok{color:#15803D;border-color:#15803D;background:#F0FDF4}.c-is{color:var(--amber);border-color:var(--amber);background:var(--amberbg)}.c-un{color:#475569;border-color:#475569;background:#F1F5F9}
+.arch{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;margin-top:16px}
+.svc{border:2px solid var(--line);border-radius:16px;padding:14px 16px;background:#fff;opacity:.45;transition:opacity .35s,border-color .35s,background-color .35s,transform .45s}
+.svc.on{opacity:1;border-color:var(--blue);background:var(--bluebg);transform:translateY(-4px)}
+.svc .tag{font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--blue)}
+.svc h4{margin:4px 0 4px;font-size:clamp(15px,1.3vw,18px);font-weight:800}
+.svc p{margin:0;font-size:clamp(12.5px,1vw,14px);line-height:1.4;color:#2E3B37}
+.pulse{position:relative}
+.svc.on .dot{display:inline-block}
+.dot{display:none;width:8px;height:8px;border-radius:50%;background:var(--blue);margin-left:6px;vertical-align:middle;animation:pl 1.1s ease-in-out infinite}
+@keyframes pl{50%{opacity:.25}}
+.foot{margin-top:24px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;font-size:13.5px;color:var(--mut);border-top:1.5px solid var(--line);padding-top:12px}
+@media (max-width:900px){.row,.arch{grid-template-columns:1fr}.step:not(:last-child)::after{display:none}.step.active{transform:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>M Clean <span>Handover AI</span> — how it works</h1>
+  <div class="sub">Photo proof for every cleaning job, checked by Gemini. Tap any step, or press play.</div>
+
+  <div class="bar">
+    <button class="primary" id="play" aria-label="Pause the walkthrough">❚❚ Pause</button>
+    <button id="prev" aria-label="Previous step">← Prev</button>
+    <button id="next" aria-label="Next step">Next →</button>
+    <div class="now" id="now" aria-live="polite"></div>
+  </div>
+
+  <div class="sec">1 · On the job — technician's phone</div>
+  <div class="row" id="row1"></div>
+  <div class="sec">2 · After the job — admin &amp; client</div>
+  <div class="row" id="row2"></div>
+  <div class="sec">3 · What runs behind it — Google Cloud</div>
+  <div class="arch" id="arch"></div>
+
+  <div class="foot"><span>AI flags visible issues only. Final decision is made by M Clean staff.</span><span>Gemini · Cloud Run · Firestore · Cloud Storage · Firebase Hosting</span></div>
+</div>
+
+<script>
+const STEPS = [
+  {who:"Technician", t:"Open the job", d:"Picks the job from the list. No typing needed.", svc:["web","run","fs"]},
+  {who:"Technician", t:"Before photo", d:"Camera or gallery, one per area. Saved instantly to the cloud.", svc:["web","run","gcs","fs"]},
+  {who:"Gemini", ai:1, t:"Names the area", d:"Looks at the photo and labels it: \"Toilet\", \"Bedroom\", \"Kitchen\".", svc:["run","gem"]},
+  {who:"Technician", t:"After photo", d:"Cleans, then shoots the same spot again.", svc:["web","run","gcs"]},
+  {who:"Gemini", ai:1, t:"Compares before vs after", d:"Checks it's the same spot and flags anything missed, so it's fixed before leaving.",
+   chips:'<span class="chip c-ok">Cleaned</span><span class="chip c-is">Issue remaining</span><span class="chip c-un">Photos don\'t match</span>', svc:["run","gem","gcs","fs"]},
+  {who:"Technician", t:"Complete job", d:"All areas done → evidence is locked and can't be changed.", svc:["web","run","fs"]},
+  {who:"Admin", t:"Cleaning report", d:"Before/after photos + findings. Download as PDF and send to the client.", svc:["web","run","fs","gcs"]},
+  {who:"Client", t:"Reports an issue", d:"Types a complaint on the report page.", svc:["web","run"]},
+  {who:"Gemini", ai:1, t:"Checks it against the photos", d:"Supported, not supported, or unclear (e.g. smell), with reason and suggested action. Shown to staff only.", svc:["run","gem","gcs","fs"]},
+  {who:"M Clean staff", t:"Decide", d:"AI flags, humans decide. Mark the complaint as reviewed.", svc:["web","run","fs"]},
+];
+const SVC = {
+  web:{tag:"Any phone / laptop", h:"Web app", p:"Simple pages, big buttons. Shrinks photos on the phone before upload."},
+  run:{tag:"Firebase Hosting → Cloud Run", h:"App server", p:"Firebase serves the pages; Cloud Run runs the Node.js API."},
+  gem:{tag:"Vertex AI", h:"Gemini", p:"Labels areas, compares photos, checks complaints — structured JSON."},
+  fs:{tag:"Database", h:"Firestore", p:"Jobs, photo pairs, AI findings, complaints. Safe transactions."},
+  gcs:{tag:"Files", h:"Cloud Storage", p:"Private photo storage — never public."},
+};
+const STEP_MS = +(new URLSearchParams(location.search).get("ms") || 2600);
+
+const els = STEPS.map((s,i)=>{
+  const b=document.createElement("div");
+  b.className="step"; b.tabIndex=0; b.setAttribute("role","button");
+  b.setAttribute("aria-label",`Step ${i+1}: ${s.t}`);
+  b.innerHTML=`<div class="num">${i+1}</div><div class="who${s.ai?" ai":""}">${s.who}</div><h3>${s.t}</h3><p>${s.d}</p>${s.chips?`<div class="chips">${s.chips}</div>`:""}`;
+  b.addEventListener("click",()=>go(i,true));
+  b.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go(i,true)}});
+  document.getElementById(i<5?"row1":"row2").appendChild(b);
+  return b;
+});
+const svcEls = Object.fromEntries(Object.entries(SVC).map(([k,v])=>{
+  const b=document.createElement("div"); b.className="svc";
+  b.innerHTML=`<div class="tag">${v.tag}</div><h4>${v.h}<span class="dot"></span></h4><p>${v.p}</p>`;
+  document.getElementById("arch").appendChild(b); return [k,b];
+}));
+
+let cur=-1, timer=null, playing=true;
+const now=document.getElementById("now"), playBtn=document.getElementById("play");
+function go(i,user){
+  cur=(i+STEPS.length)%STEPS.length;
+  els.forEach((e,k)=>{e.classList.toggle("active",k===cur);e.classList.toggle("done",k<cur)});
+  Object.entries(svcEls).forEach(([k,e])=>e.classList.toggle("on",STEPS[cur].svc.includes(k)));
+  const names=STEPS[cur].svc.map(k=>SVC[k].h).join(" + ");
+  now.innerHTML=`<b>Step ${cur+1} of ${STEPS.length}:</b> ${STEPS[cur].t} &nbsp;·&nbsp; uses ${names}`;
+  if(user&&playing){restart()}
+}
+function restart(){clearInterval(timer);timer=setInterval(()=>go(cur+1),STEP_MS)}
+function setPlaying(p){playing=p;playBtn.textContent=p?"❚❚ Pause":"▶ Play";playBtn.setAttribute("aria-label",p?"Pause the walkthrough":"Play the walkthrough");p?restart():clearInterval(timer)}
+playBtn.onclick=()=>setPlaying(!playing);
+document.getElementById("next").onclick=()=>{go(cur+1);if(playing)restart()};
+document.getElementById("prev").onclick=()=>{go(cur-1);if(playing)restart()};
+go(0);
+if(window.matchMedia("(prefers-reduced-motion: reduce)").matches) setPlaying(false); else restart();
+</script>
+</body>
+</html>

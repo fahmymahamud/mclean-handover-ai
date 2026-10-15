@@ -1,0 +1,24 @@
+{
+  "name": "mclean-handover",
+  "version": "1.0.0",
+  "description": "M Clean Handover AI — proof-of-cleaning web app",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^9.3.1",
+    "@google-cloud/storage": "^8.4.0",
+    "@google/genai": "^2.29.0",
+    "dotenv": "^18.0.7",
+    "express": "^5.3.0",
+    "multer": "^2.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
