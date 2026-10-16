@@ -31,12 +31,14 @@ function formatJob(id, data) {
       ? {
           photoPath: pair.before.photoPath,
           uploadedAt: toIso(pair.before.uploadedAt),
+          source: pair.before.source || 'camera',
         }
       : null,
     after: pair.after
       ? {
           photoPath: pair.after.photoPath,
           uploadedAt: toIso(pair.after.uploadedAt),
+          source: pair.after.source || 'camera',
         }
       : null,
     check: pair.check || null,
@@ -342,6 +344,14 @@ async function getSummaryCounts() {
   return { openJobs, newComplaints };
 }
 
+/**
+ * Deletes a job document from Firestore.
+ */
+async function deleteJobDocument(jobId) {
+  const docRef = jobsCollection.doc(jobId);
+  await docRef.delete();
+}
+
 module.exports = {
   db,
   createJob,
@@ -351,6 +361,7 @@ module.exports = {
   updatePairAfterTransaction,
   deletePairTransaction,
   completeJob,
+  deleteJobDocument,
   addComplaintTransaction,
   updateComplaintStatusTransaction,
   listLightComplaints,

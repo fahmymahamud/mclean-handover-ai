@@ -78,8 +78,19 @@ async function streamPhoto(photoPath, res) {
     .pipe(res);
 }
 
+/**
+ * Deletes all photos stored for a job.
+ * Exact prefix: jobs/<jobId>/
+ */
+async function deleteJobPhotos(jobId) {
+  const bucket = getBucket();
+  const prefix = `jobs/${jobId}/`;
+  await bucket.deleteFiles({ prefix, force: true });
+}
+
 module.exports = {
   savePairPhoto,
   getPhotoBuffer,
   streamPhoto,
+  deleteJobPhotos,
 };

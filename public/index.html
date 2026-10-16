@@ -9,33 +9,40 @@
 <body>
   <header class="app-header">
     <div class="header-container">
-      <div style="display: flex; align-items: center; gap: 0.75rem;">
-        <h1 class="brand-title"><a href="#/" class="brand-link">M Clean Handover AI</a></h1>
-        <span class="app-badge">Technician</span>
-      </div>
+      <h1 class="brand-title"><a href="#/" class="brand-link">M Clean Handover</a></h1>
+      <span class="header-date" id="headerDate"></span>
     </div>
   </header>
 
   <main class="main-content">
     <!-- View 1: Home Dashboard (#/) -->
     <section id="viewHome" class="view-panel" style="display: none;">
-      <div class="home-tabs-grid">
-        <a href="#/jobs" class="tab-card-btn" id="tabOpenJobsBtn">
-          <div class="tab-card-icon">📋</div>
-          <div class="tab-card-content">
-            <span class="tab-card-title">Open Jobs</span>
-            <span class="tab-card-count" id="homeOpenJobsCount">—</span>
+      <div class="home-rows-list">
+        <a href="#/jobs" class="home-tab-row" id="tabOpenJobsBtn">
+          <div class="home-row-info">
+            <span class="home-row-title">Jobs</span>
+            <span class="home-row-sub">Open cleaning jobs</span>
+          </div>
+          <div class="home-row-stat">
+            <span class="home-row-count" id="homeOpenJobsCount">—</span>
+            <span class="home-row-arrow" aria-hidden="true">→</span>
           </div>
         </a>
 
-        <a href="#/complaints" class="tab-card-btn" id="tabComplaintsBtn">
-          <div class="tab-card-icon">⚠️</div>
-          <div class="tab-card-content">
-            <span class="tab-card-title">Complaints</span>
-            <span class="tab-card-count" id="homeNewComplaintsCount">—</span>
-            <span class="tab-card-badge" id="homeNewComplaintsBadge" style="display: none;">NEW</span>
+        <a href="#/complaints" class="home-tab-row" id="tabComplaintsBtn">
+          <div class="home-row-info">
+            <span class="home-row-title">Complaints</span>
+            <span class="home-row-sub">Waiting for review</span>
+          </div>
+          <div class="home-row-stat">
+            <span class="home-row-count" id="homeNewComplaintsCount">—</span>
+            <span class="home-row-arrow" aria-hidden="true">→</span>
           </div>
         </a>
+
+        <button type="button" class="home-new-job-btn" id="homeNewJobBtn">
+          + New job
+        </button>
       </div>
     </section>
 
@@ -66,6 +73,9 @@
           </div>
         </form>
       </div>
+
+      <!-- Jobs Notice Banner (e.g. Job deleted) -->
+      <div id="jobsNoticeBanner" class="success-box" style="display: none; padding: 0.75rem 1rem; margin-bottom: 0.75rem;"></div>
 
       <!-- List of Open Jobs (No photos) -->
       <div id="openJobsList" class="jobs-list">
@@ -133,9 +143,30 @@
             <a id="whatsappShareBtn" class="whatsapp-btn" target="_blank" rel="noopener noreferrer">
               Share on WhatsApp
             </a>
-            <a id="viewReportBtn" class="secondary-btn" target="_blank" rel="noopener noreferrer">
+            <a id="openReportLink" class="secondary-btn" target="_blank" rel="noopener noreferrer">
+              Open report
+            </a>
+            <a id="viewReportBtn" class="secondary-btn" target="_blank" rel="noopener noreferrer" style="display: none;">
               View Cleaning Report
             </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete Job Section (Active jobs only) -->
+      <div id="deleteJobSection" style="margin-top: 1.5rem; text-align: center;">
+        <button type="button" id="deleteJobBtn" class="secondary-btn danger-btn lg-btn">
+          Delete job
+        </button>
+        <div id="deleteJobConfirmBox" class="confirm-box" style="display: none; border-color: var(--error-border); background-color: var(--error-bg); margin-top: 1rem;">
+          <p class="confirm-msg" style="color: var(--error-color);">Delete this job and all its photos? This cannot be undone.</p>
+          <div class="confirm-actions">
+            <button type="button" id="confirmDeleteJobBtn" class="primary-btn danger-action-btn">
+              Delete
+            </button>
+            <button type="button" id="cancelDeleteJobBtn" class="secondary-btn">
+              Cancel
+            </button>
           </div>
         </div>
       </div>

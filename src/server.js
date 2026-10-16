@@ -10,7 +10,7 @@ const crypto = require('crypto');
 const { Timestamp } = require('@google-cloud/firestore');
 
 const { labelArea, comparePhotos, evaluateComplaint } = require('./gemini');
-const { savePairPhoto, getPhotoBuffer, streamPhoto } = require('./storage');
+const { savePairPhoto, getPhotoBuffer, streamPhoto, deleteJobPhotos } = require('./storage');
 const {
   createJob,
   listJobs,
@@ -19,6 +19,7 @@ const {
   updatePairAfterTransaction,
   deletePairTransaction,
   completeJob,
+  deleteJobDocument,
   addComplaintTransaction,
   updateComplaintStatusTransaction,
   listLightComplaints,
@@ -159,12 +160,14 @@ app.post('/api/jobs/:id/pairs', upload.single('photo'), async (req, res) => {
       labelArea(req.file.buffer, req.file.mimetype),
     ]);
 
+    const source = req.body && req.body.source === 'gallery' ? 'gallery' : 'camera';
     const newPair = {
       id: pairId,
       areaLabel: areaLabel || 'Area',
       before: {
         photoPath,
         uploadedAt: Timestamp.now(),
+        source,
       },
       after: null,
       check: null,
@@ -214,12 +217,14 @@ app.post('/api/jobs/:id/pairs/:pairId/after', upload.single('photo'), async (req
     );
 
     // 3. Update pair via transaction
+    const source = req.body && req.body.source === 'gallery' ? 'gallery' : 'camera';
     const updatedJob = await updatePairAfterTransaction(
       jobId,
       pairId,
       {
         photoPath: afterPhotoPath,
         uploadedAt: Timestamp.now(),
+        source,
       },
       checkResult
     );
@@ -252,6 +257,31 @@ app.post('/api/jobs/:id/complete', async (req, res) => {
   } catch (err) {
     console.error('Error completing job:', err);
     res.status(400).json({ error: err.message || 'Failed to complete job.' });
+  }
+});
+
+// Delete an entire job and all its photos (refuses completed jobs with HTTP 409)
+app.delete('/api/jobs/:id', async (req, res) => {
+  try {
+    const { id: jobId } = req.params;
+    const job = await getJob(jobId);
+    if (!job) {
+      return res.status(404).json({ error: 'Job not found.' });
+    }
+    if (job.status === 'completed') {
+      return res.status(409).json({ error: 'Completed jobs are locked evidence and cannot be deleted.' });
+    }
+
+    // 1. Delete all photo files in Cloud Storage under prefix jobs/<jobId>/
+    await deleteJobPhotos(jobId);
+
+    // 2. Delete Firestore job document
+    await deleteJobDocument(jobId);
+
+    res.json({ ok: true, message: 'Job and photos deleted successfully.' });
+  } catch (err) {
+    console.error('Error deleting job:', err);
+    res.status(500).json({ error: err.message || 'Failed to delete job.' });
   }
 });
 

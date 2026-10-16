@@ -2,6 +2,7 @@
 // Client Cleaning Report page logic (read-only handover verification).
 
 document.addEventListener('DOMContentLoaded', () => {
+  initPdfDownload();
   loadCleaningReport();
 });
 
@@ -96,13 +97,17 @@ function renderReport(job) {
         <div class="photo-cell">
           <span class="photo-cell-label">Before Cleaning</span>
           <img class="photo-display-img" src="${beforeUrl}" alt="${escapeHtml(pair.areaLabel)} Before" loading="lazy" />
+          <span class="photo-source-tag">${pair.before && pair.before.source === 'gallery' ? 'From gallery' : 'Taken in app'}</span>
         </div>
 
         <div class="photo-cell">
           <span class="photo-cell-label">After Cleaning</span>
           ${
             afterUrl
-              ? `<img class="photo-display-img" src="${afterUrl}" alt="${escapeHtml(pair.areaLabel)} After" loading="lazy" />`
+              ? `
+                <img class="photo-display-img" src="${afterUrl}" alt="${escapeHtml(pair.areaLabel)} After" loading="lazy" />
+                <span class="photo-source-tag">${pair.after && pair.after.source === 'gallery' ? 'From gallery' : 'Taken in app'}</span>
+              `
               : `<div class="empty-after-cell"><p class="text-muted">No after photo provided</p></div>`
           }
         </div>
@@ -208,3 +213,42 @@ function escapeHtml(str) {
     }[tag] || tag)
   );
 }
+
+function initPdfDownload() {
+  const downloadBtn = document.getElementById('downloadPdfBtn');
+  if (!downloadBtn) return;
+
+  downloadBtn.addEventListener('click', async () => {
+    const originalText = downloadBtn.textContent;
+    downloadBtn.disabled = true;
+    downloadBtn.textContent = 'Preparing PDF…';
+
+    try {
+      const images = Array.from(document.querySelectorAll('img.photo-display-img'));
+      // Ensure all images are switched from lazy to eager
+      images.forEach((img) => {
+        img.loading = 'eager';
+      });
+
+      // Wait until every image has finished loading
+      await Promise.all(
+        images.map((img) => {
+          if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+          return new Promise((resolve) => {
+            img.addEventListener('load', resolve, { once: true });
+            img.addEventListener('error', resolve, { once: true });
+          });
+        })
+      );
+
+      // Trigger browser print
+      window.print();
+    } catch (err) {
+      console.error('Error preparing print PDF:', err);
+    } finally {
+      downloadBtn.disabled = false;
+      downloadBtn.textContent = originalText;
+    }
+  });
+}
+

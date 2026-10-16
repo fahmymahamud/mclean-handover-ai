@@ -13,7 +13,7 @@ Cleaning companies and clients often disagree about whether a job was done prope
 3. **Complete job.** Evidence is locked, and the admin downloads a **PDF cleaning report** for the client.
 4. **Client feedback.** Complaints are checked by Gemini against the photo evidence (supported / not supported / unclear) and shown only to staff. *AI flags, humans decide.*
 
-Built for accessibility: large buttons, almost no typing, and fast on low-end phones and slow mobile data.
+**Future of Work & Enterprise Productivity:** moves a cleaning company from mixed-up WhatsApp photos to organised, AI-checked records per job. Built for frontline crews: large buttons, almost no typing, and fast on low-end phones and slow mobile data.
 
 ## Google Cloud services
 | Service | What it does here |

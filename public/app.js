@@ -4,11 +4,14 @@
 
 let currentJob = null;
 let desiredSlotCount = 3;
+let jobsNoticeMessage = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+  updateHeaderDate();
   initRouter();
   initNewJobForm();
   initCompletionControls();
+  initDeleteJobControls();
 });
 
 // -------------------------------------------------------------
@@ -74,12 +77,22 @@ function showView(viewId) {
 }
 
 // -------------------------------------------------------------
+// 1.1 Header Date
+// -------------------------------------------------------------
+function updateHeaderDate() {
+  const dateEl = document.getElementById('headerDate');
+  if (!dateEl) return;
+  const now = new Date();
+  const options = { weekday: 'short', day: 'numeric', month: 'short' };
+  dateEl.textContent = now.toLocaleDateString('en-GB', options);
+}
+
+// -------------------------------------------------------------
 // 2. Home Dashboard (#/)
 // -------------------------------------------------------------
 async function loadHomeSummary() {
   const openCountEl = document.getElementById('homeOpenJobsCount');
   const newComplaintsCountEl = document.getElementById('homeNewComplaintsCount');
-  const badgeEl = document.getElementById('homeNewComplaintsBadge');
 
   try {
     const startTime = performance.now();
@@ -91,20 +104,10 @@ async function loadHomeSummary() {
 
     if (openCountEl) openCountEl.textContent = data.openJobs ?? 0;
     if (newComplaintsCountEl) newComplaintsCountEl.textContent = data.newComplaints ?? 0;
-
-    if (badgeEl) {
-      if ((data.newComplaints || 0) > 0) {
-        badgeEl.textContent = `${data.newComplaints} NEW`;
-        badgeEl.style.display = 'inline-block';
-      } else {
-        badgeEl.style.display = 'none';
-      }
-    }
   } catch (err) {
     console.error('Error loading summary counts:', err);
     if (openCountEl) openCountEl.textContent = '—';
     if (newComplaintsCountEl) newComplaintsCountEl.textContent = '—';
-    if (badgeEl) badgeEl.style.display = 'none';
   }
 }
 
@@ -113,18 +116,30 @@ async function loadHomeSummary() {
 // -------------------------------------------------------------
 function initNewJobForm() {
   const openModalBtn = document.getElementById('openNewJobModalBtn');
+  const homeNewJobBtn = document.getElementById('homeNewJobBtn');
   const newJobCard = document.getElementById('newJobCard');
   const cancelBtn = document.getElementById('cancelNewJobBtn');
   const form = document.getElementById('createJobForm');
   const nameInput = document.getElementById('newJobName');
 
+  function openCreateForm() {
+    newJobCard.style.display = 'block';
+    if (nameInput) {
+      nameInput.value = '';
+      nameInput.focus();
+    }
+  }
+
   if (openModalBtn && newJobCard) {
-    openModalBtn.addEventListener('click', () => {
-      newJobCard.style.display = 'block';
-      if (nameInput) {
-        nameInput.value = '';
-        nameInput.focus();
-      }
+    openModalBtn.addEventListener('click', openCreateForm);
+  }
+
+  if (homeNewJobBtn && newJobCard) {
+    homeNewJobBtn.addEventListener('click', () => {
+      window.location.hash = '#/jobs';
+      setTimeout(() => {
+        openCreateForm();
+      }, 50);
     });
   }
 
@@ -170,6 +185,17 @@ function initNewJobForm() {
 }
 
 async function loadOpenJobs() {
+  const noticeEl = document.getElementById('jobsNoticeBanner');
+  if (noticeEl) {
+    if (jobsNoticeMessage) {
+      noticeEl.textContent = jobsNoticeMessage;
+      noticeEl.style.display = 'block';
+      jobsNoticeMessage = null;
+    } else {
+      noticeEl.style.display = 'none';
+    }
+  }
+
   const listEl = document.getElementById('openJobsList');
   if (!listEl) return;
   listEl.innerHTML = '<p class="loading-text">Loading active jobs…</p>';
@@ -307,6 +333,14 @@ function renderJobDetail(job) {
     updateCompleteButtonState(job);
   }
 
+  // Delete job section (only allowed on active jobs)
+  const deleteSection = document.getElementById('deleteJobSection');
+  const deleteConfirmBox = document.getElementById('deleteJobConfirmBox');
+  if (deleteConfirmBox) deleteConfirmBox.style.display = 'none';
+  if (deleteSection) {
+    deleteSection.style.display = isCompleted ? 'none' : 'block';
+  }
+
   renderPairs(job, pairsContainer, isCompleted);
 }
 
@@ -354,6 +388,7 @@ function renderPairs(job, container, isCompleted) {
           <div class="photo-cell">
             <span class="photo-cell-label">Before Cleaning</span>
             <img class="photo-display-img" src="${beforeUrl}" alt="${escapeHtml(pair.areaLabel)} Before" loading="lazy" />
+            <span class="photo-source-tag">${pair.before && pair.before.source === 'gallery' ? 'From gallery' : 'Taken in app'}</span>
           </div>
 
           <div class="photo-cell">
@@ -362,13 +397,18 @@ function renderPairs(job, container, isCompleted) {
               afterUrl
                 ? `
                   <img class="photo-display-img" src="${afterUrl}" alt="${escapeHtml(pair.areaLabel)} After" loading="lazy" />
+                  <span class="photo-source-tag">${pair.after && pair.after.source === 'gallery' ? 'From gallery' : 'Taken in app'}</span>
                   ${
                     !isCompleted
                       ? `
-                        <div style="margin-top: 0.5rem;">
-                          <label class="secondary-btn sm-btn file-capture-btn" style="cursor: pointer;">
-                            🔄 Retake after photo
-                            <input type="file" accept="image/*" capture="environment" class="after-photo-input" data-pair-id="${escapeHtml(pair.id)}" style="display: none;" />
+                        <div class="photo-capture-actions" style="margin-top: 0.5rem;">
+                          <label class="secondary-btn sm-btn file-capture-btn">
+                            Take photo
+                            <input type="file" accept="image/*" capture="environment" class="after-photo-input" data-pair-id="${escapeHtml(pair.id)}" data-source="camera" style="display: none;" />
+                          </label>
+                          <label class="secondary-btn sm-btn file-capture-btn">
+                            From gallery
+                            <input type="file" accept="image/*" class="after-photo-input" data-pair-id="${escapeHtml(pair.id)}" data-source="gallery" style="display: none;" />
                           </label>
                         </div>
                       `
@@ -379,10 +419,16 @@ function renderPairs(job, container, isCompleted) {
                 ? `
                   <div class="empty-after-cell">
                     <p class="text-muted" style="margin-bottom: 0.75rem; font-size: 0.9rem;">Cleaning finished? Take after photo.</p>
-                    <label class="primary-btn sm-btn file-capture-btn" style="cursor: pointer;">
-                      📷 Add After Photo
-                      <input type="file" accept="image/*" capture="environment" class="after-photo-input" data-pair-id="${escapeHtml(pair.id)}" style="display: none;" />
-                    </label>
+                    <div class="photo-capture-actions">
+                      <label class="primary-btn sm-btn file-capture-btn">
+                        Take photo
+                        <input type="file" accept="image/*" capture="environment" class="after-photo-input" data-pair-id="${escapeHtml(pair.id)}" data-source="camera" style="display: none;" />
+                      </label>
+                      <label class="secondary-btn sm-btn file-capture-btn">
+                        From gallery
+                        <input type="file" accept="image/*" class="after-photo-input" data-pair-id="${escapeHtml(pair.id)}" data-source="gallery" style="display: none;" />
+                      </label>
+                    </div>
                   </div>
                 `
                 : `<div class="empty-after-cell"><p class="text-muted">No after photo uploaded</p></div>`
@@ -410,10 +456,16 @@ function renderPairs(job, container, isCompleted) {
         </div>
         <div class="empty-slot-box">
           <p>Capture initial condition before cleaning starts.</p>
-          <label class="primary-btn file-capture-btn" style="cursor: pointer;">
-            📷 Take Before Photo
-            <input type="file" accept="image/*" capture="environment" class="before-photo-input" data-slot-index="${i}" style="display: none;" />
-          </label>
+          <div class="photo-capture-actions">
+            <label class="primary-btn sm-btn file-capture-btn">
+              Take photo
+              <input type="file" accept="image/*" capture="environment" class="before-photo-input" data-slot-index="${i}" data-source="camera" style="display: none;" />
+            </label>
+            <label class="secondary-btn sm-btn file-capture-btn">
+              From gallery
+              <input type="file" accept="image/*" class="before-photo-input" data-slot-index="${i}" data-source="gallery" style="display: none;" />
+            </label>
+          </div>
         </div>
       `;
     }
@@ -439,8 +491,10 @@ function attachPairEvents(container, job) {
 
       try {
         const resized = await resizePhoto(file);
+        const source = input.dataset.source || 'camera';
         const formData = new FormData();
         formData.append('photo', resized);
+        formData.append('source', source);
 
         const res = await fetch(`/api/jobs/${encodeURIComponent(job.id)}/pairs`, {
           method: 'POST',
@@ -477,8 +531,10 @@ function attachPairEvents(container, job) {
 
       try {
         const resized = await resizePhoto(file);
+        const source = input.dataset.source || 'camera';
         const formData = new FormData();
         formData.append('photo', resized);
+        formData.append('source', source);
 
         const res = await fetch(
           `/api/jobs/${encodeURIComponent(job.id)}/pairs/${encodeURIComponent(pairId)}/after`,
@@ -634,14 +690,65 @@ function setupCompletedLinks(job) {
   const reportUrl = `${window.location.origin}/report.html?id=${encodeURIComponent(job.id)}`;
   const waBtn = document.getElementById('whatsappShareBtn');
   const viewReportBtn = document.getElementById('viewReportBtn');
+  const openReportLink = document.getElementById('openReportLink');
 
   if (viewReportBtn) {
     viewReportBtn.href = reportUrl;
   }
 
+  if (openReportLink) {
+    openReportLink.href = reportUrl;
+  }
+
   if (waBtn) {
     const message = `Hello! Your cleaning handover report for ${job.jobName || 'your unit'} is ready: ${reportUrl}`;
     waBtn.href = `https://wa.me/?text=${encodeURIComponent(message)}`;
+  }
+}
+
+function initDeleteJobControls() {
+  const deleteBtn = document.getElementById('deleteJobBtn');
+  const confirmBox = document.getElementById('deleteJobConfirmBox');
+  const confirmBtn = document.getElementById('confirmDeleteJobBtn');
+  const cancelBtn = document.getElementById('cancelDeleteJobBtn');
+
+  if (deleteBtn && confirmBox) {
+    deleteBtn.addEventListener('click', () => {
+      confirmBox.style.display = 'block';
+      confirmBox.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+
+  if (cancelBtn && confirmBox) {
+    cancelBtn.addEventListener('click', () => {
+      confirmBox.style.display = 'none';
+    });
+  }
+
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', async () => {
+      if (!currentJob) return;
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Deleting…';
+
+      try {
+        const res = await fetch(`/api/jobs/${encodeURIComponent(currentJob.id)}`, {
+          method: 'DELETE',
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to delete job');
+        }
+
+        jobsNoticeMessage = 'Job deleted';
+        window.location.hash = '#/jobs';
+      } catch (err) {
+        console.error('Error deleting job:', err);
+        alert(err.message || 'Could not delete job.');
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Delete';
+      }
+    });
   }
 }
 
@@ -743,7 +850,8 @@ function renderComplaintDetail(job, complaint, container) {
   if (!container) return;
 
   const dateStr = complaint.createdAt ? new Date(complaint.createdAt).toLocaleString() : '';
-  const finding = complaint.ai_assessment?.finding || 'unclear';
+  const check = complaint.check || complaint.ai_assessment || {};
+  const finding = check.finding || complaint.finding || 'unclear';
   let badgeClass = 'badge-unclear';
   let badgeText = 'Unclear';
   if (finding === 'supported') {
@@ -754,9 +862,9 @@ function renderComplaintDetail(job, complaint, container) {
     badgeText = 'Evidence Disproves';
   }
 
-  const areaLabel = complaint.ai_assessment?.areaLabel || 'General';
-  const explanation = complaint.ai_assessment?.explanation || 'No explanation provided.';
-  const suggestedAction = complaint.ai_assessment?.suggested_action || 'Review area with technician.';
+  const areaLabel = check.areaLabel || complaint.areaLabel || 'General';
+  const explanation = check.explanation || complaint.explanation || 'No explanation provided.';
+  const suggestedAction = check.suggested_action || complaint.suggested_action || 'Review area with technician.';
 
   // Related photos: filter pairs matching areaLabel if available, or all pairs
   const pairs = job.pairs || [];
